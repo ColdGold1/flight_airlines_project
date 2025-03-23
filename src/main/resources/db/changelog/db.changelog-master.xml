@@ -1,0 +1,33 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+
+    <include file="db/changelog/changeset/create-booking-status-type.xml"/>
+
+    <include file="db/changelog/changeset/create-role-type.xml"/>
+
+    <include file="db/changelog/changeset/create-subscription-type.xml"/>
+
+    <include file="db/changelog/changeset/create-flight-type.xml"/>
+
+    <include file="db/changelog/changeset/create-user.xml"/>
+
+    <include file="db/changelog/changeset/create-subscription.xml"/>
+
+    <include file="db/changelog/changeset/create-aircraft.xml"/>
+
+    <include file="db/changelog/changeset/create-airport.xml"/>
+
+    <include file="db/changelog/changeset/create-booking.xml"/>
+
+    <include file="db/changelog/changeset/create-flight.xml"/>
+
+    <include file="db/changelog/changeset/create-ticket.xml"/>
+
+    <include file="db/changelog/changeset/create-user-subs.xml"/>
+
+
+</databaseChangeLog>

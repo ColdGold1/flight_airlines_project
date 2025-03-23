@@ -1,0 +1,29 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="Ilya Liburkin:create-airport" author="Ilya Liburkin">
+        <createTable tableName="airport">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_count_of_sync_flights" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="airport_icao" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="airport_iata" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="location" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

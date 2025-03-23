@@ -1,0 +1,45 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="Ilya Liburkin:create-flight" author="Ilya Liburkin">
+        <createTable tableName="flight">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="arrival_time" type="timestamp without time zone"/>
+            <column name="departure_time" type="timestamp without time zone"/>
+            <column name="aircraft_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dep_airport_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="arr_airport_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="flight_number" type="text"/>
+            <column name="type_of_flight" type="flight_type">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="flight" baseColumnNames="aircraft_id"
+                                 constraintName="flight_aircraft_fk" referencedTableName="aircraft"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="flight" baseColumnNames="dep_airport_id"
+                                 constraintName="flight_dep_airport_id_fk" referencedTableName="airport"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="flight" baseColumnNames="arr_airport_id"
+                                 constraintName="flight_arr_airport_id_fk" referencedTableName="airport"
+                                 referencedColumnNames="id"/>
+
+<!--        <createType typeName="flight_type">-->
+<!--            <enumValue value="BUSINESS"/>-->
+<!--            <enumValue value="ECONOMIC"/>-->
+<!--            <enumValue value="COMFORTABLE"/>-->
+<!--            <enumValue value="FIRST_CLASS"/>-->
+<!--        </createType>-->
+    </changeSet>
+</databaseChangeLog>

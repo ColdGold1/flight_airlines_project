@@ -1,0 +1,35 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="Ilya Liburkin:create-booking" author="Ilya Liburkin">
+        <createTable tableName="booking">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="booking_datetime" type="timestamp without time zone">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="booking_status" type="booking_status_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="flight_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="booking" baseColumnNames="user_id"
+                                 constraintName="booking_user_fk" referencedTableName="user"
+                                 referencedColumnNames="id" />
+
+<!--        <createType typeName="booking_status_type">-->
+<!--            <enumValue value="CONFIRMED"/>-->
+<!--            <enumValue value="CANCELED"/>-->
+<!--            <enumValue value="IN_PROGRESS"/>-->
+<!--        </createType>-->
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,30 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="Ilya Liburkin:create-user-subs" author="Ilya Liburkin">
+        <createTable tableName="user_subs">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="count_of_used_bookings" type="integer">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="subscription_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_of_start_of_sub" type="timestamp without time zone"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="user_subs" baseColumnNames="user_id"
+                                 constraintName="user_subs_user_fk" referencedTableName="user"
+                                 referencedColumnNames="id"/>
+        <addForeignKeyConstraint baseTableName="user_subs" baseColumnNames="subscription_id"
+                                 constraintName="user_subs_subscription_fk" referencedTableName="subscription"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+</databaseChangeLog>

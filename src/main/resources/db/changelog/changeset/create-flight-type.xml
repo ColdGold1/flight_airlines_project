@@ -1,0 +1,14 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Changeset для создания типа ENUM 'role_type' -->
+    <changeSet id="create-role-type" author="Ilya Liburkin">
+        <sql dbms="postgresql">
+            CREATE TYPE flight_type AS ENUM ('BUSINESS','ECONOMIC','COMFORTABLE', 'FIRST_CLASS');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

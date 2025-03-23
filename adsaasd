@@ -1,0 +1,17 @@
+[33mcommit a402e832f21cbec103ba6b822b47df1f64be6f6d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmigrations[m[33m)[m
+Author: Ilya Liburkin <ilyaliburkin@gmail.com>
+Date:   Sun Mar 23 21:56:07 2025 +0300
+
+    ++
+
+[33mcommit 27aaa628f0252d4e2e1008cbc8164b60bd51cb36[m[33m ([m[1;31morigin/migrations[m[33m)[m
+Author: Ilya Liburkin <ilyaliburkin@gmail.com>
+Date:   Sun Mar 23 21:46:52 2025 +0300
+
+    added some migrations
+
+[33mcommit fc9ef201902e71544f34af40e9f3b688836ba4cb[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Ilya Liburkin <ilyaliburkin@gmail.com>
+Date:   Sun Mar 23 21:43:03 2025 +0300
+
+    first commit

@@ -1,0 +1,29 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="Ilya Liburkin:create-subscription" author="Ilya Liburkin">
+        <createTable tableName="subscription">
+            <column name="id" type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type_of_subscription" type="subscription_type">
+                <constraints nullable="false"/>
+            </column>
+            <column name="count_of_bookings" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+<!--        <createType typeName="subscription_type">-->
+<!--            <enumValue value="BASIC"/>-->
+<!--            <enumValue value="ADVANCED"/>-->
+<!--            <enumValue value="PREMIUM"/>-->
+<!--        </createType>-->
+    </changeSet>
+</databaseChangeLog>
