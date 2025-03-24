@@ -4,10 +4,15 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="Ilya Liburkin:create-ticket" author="Ilya Liburkin">
+    <changeSet id="create-ticket" author="Ilya Liburkin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="ticket"/>
+            </not>
+        </preConditions>
         <createTable tableName="ticket">
             <column name="id" type="bigint">
-                <constraints nullable="false" primaryKey="true"/>
+                <constraints primaryKey="true"/>
             </column>
             <column name="booking_id" type="bigint">
                 <constraints nullable="false"/>
@@ -16,6 +21,10 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <sql>
+            ALTER TABLE ticket
+                ADD CONSTRAINT check_seats_number CHECK (seat_number > 0)
+        </sql>
         <addForeignKeyConstraint baseTableName="ticket" baseColumnNames="booking_id"
                                  constraintName="ticket_booking_id" referencedTableName="booking"
                                  referencedColumnNames="id"/>

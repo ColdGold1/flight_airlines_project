@@ -4,10 +4,15 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="Ilya Liburkin:create-flight" author="Ilya Liburkin">
+    <changeSet id="create-flight" author="Ilya Liburkin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="flight"/>
+            </not>
+        </preConditions>
         <createTable tableName="flight">
             <column name="id" type="bigint">
-                <constraints nullable="false" primaryKey="true"/>
+                <constraints primaryKey="true"/>
             </column>
             <column name="arrival_time" type="timestamp without time zone"/>
             <column name="departure_time" type="timestamp without time zone"/>
@@ -20,7 +25,7 @@
             <column name="arr_airport_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="flight_number" type="text"/>
+            <column name="flight_number" type="varchar"/>
             <column name="type_of_flight" type="flight_type">
                 <constraints nullable="false"/>
             </column>
@@ -34,12 +39,5 @@
         <addForeignKeyConstraint baseTableName="flight" baseColumnNames="arr_airport_id"
                                  constraintName="flight_arr_airport_id_fk" referencedTableName="airport"
                                  referencedColumnNames="id"/>
-
-<!--        <createType typeName="flight_type">-->
-<!--            <enumValue value="BUSINESS"/>-->
-<!--            <enumValue value="ECONOMIC"/>-->
-<!--            <enumValue value="COMFORTABLE"/>-->
-<!--            <enumValue value="FIRST_CLASS"/>-->
-<!--        </createType>-->
     </changeSet>
 </databaseChangeLog>

@@ -5,22 +5,31 @@
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
     <changeSet id="create-aircraft" author="Ilya Liburkin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="aircraft"/>
+            </not>
+        </preConditions>
         <createTable tableName="aircraft">
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="model" type="text">
+            <column name="model" type="varchar">
                 <constraints nullable="false"/>
             </column>
-            <column name="aircraft_icao" type="text">
-                <constraints nullable="false"/>
+            <column name="aircraft_icao" type="varchar">
+                <constraints nullable="false" unique="true"/>
             </column>
-            <column name="aircraft_iata" type="text">
-                <constraints nullable="false"/>
+            <column name="aircraft_iata" type="varchar">
+                <constraints nullable="false" unique="true"/>
             </column>
             <column name="count_of_seats" type="integer">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <sql>
+            ALTER TABLE aircraft
+                ADD CONSTRAINT check_seats CHECK (count_of_seats > 0)
+        </sql>
     </changeSet>
 </databaseChangeLog>

@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### liquebase ###
+adsaasd
+
+### env ####
+.env
+
+### maven ###
+.mvn
+mvnw
+mvnw.cmd
+
+### java ###
+#src/main/java
+
+
+

@@ -4,8 +4,12 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <!-- Changeset для создания типа ENUM 'role_type' -->
-    <changeSet id="create-role-type" author="Ilya Liburkin">
+    <changeSet id="create-flight-type" author="Ilya Liburkin">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM pg_type WHERE typname = 'flight_type'
+                </sqlCheck>
+        </preConditions>
         <sql dbms="postgresql">
             CREATE TYPE flight_type AS ENUM ('BUSINESS','ECONOMIC','COMFORTABLE', 'FIRST_CLASS');
         </sql>
