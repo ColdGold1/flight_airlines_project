@@ -14,7 +14,7 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="booking_datetime" type="timestamp without time zone">
+            <column name="booking_datetime" type="JAVA.SQL.TYPES.TIMESTAMP_WITH_TIMEZONE">
                 <constraints nullable="false"/>
             </column>
             <column name="user_id" type="bigint">

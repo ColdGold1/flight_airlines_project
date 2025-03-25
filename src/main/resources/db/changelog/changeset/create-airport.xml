@@ -14,19 +14,19 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar">
+            <column name="name" type="varchar(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="max_count_of_sync_flights" type="integer">
                 <constraints nullable="false"/>
             </column>
-            <column name="airport_icao" type="varchar">
+            <column name="airport_icao" type="varchar(5)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="airport_iata" type="varchar">
+            <column name="airport_iata" type="varchar(4)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="location" type="varchar">
+            <column name="location" type="varchar(60)">
                 <constraints nullable="false"/>
             </column>
         </createTable>

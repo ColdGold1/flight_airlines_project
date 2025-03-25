@@ -14,7 +14,7 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="name" type="varchar">
+            <column name="name" type="varchar(20)">
                 <constraints nullable="false"/>
             </column>
             <column name="type_of_subscription" type="subscription_type">
