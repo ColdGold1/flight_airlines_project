@@ -14,8 +14,8 @@
             <column name="id" type="bigint">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="arrival_time" type="timestamp without time zone"/>
-            <column name="departure_time" type="timestamp without time zone"/>
+            <column name="arrival_time" type="java.sql.Types.TIMESTAMP_WITH_TIMEZONE"/>
+            <column name="departure_time" type="java.sql.Types.TIMESTAMP_WITH_TIMEZONE"/>
             <column name="aircraft_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
@@ -25,7 +25,7 @@
             <column name="arr_airport_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="flight_number" type="varchar"/>
+            <column name="flight_number" type="varchar(4)"/>
             <column name="type_of_flight" type="flight_type">
                 <constraints nullable="false"/>
             </column>

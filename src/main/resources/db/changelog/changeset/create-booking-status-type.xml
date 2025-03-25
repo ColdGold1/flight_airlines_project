@@ -7,9 +7,7 @@
     <changeSet id="create-booking-status-type" author="Ilya Liburkin">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">
-                SELECT COUNT(*)
-                FROM pg_type
-                WHERE typname = 'booking_status_type'
+                SELECT COUNT(*) FROM pg_type WHERE typname='booking_status_type';
             </sqlCheck>
         </preConditions>
         <sql dbms="postgresql">
