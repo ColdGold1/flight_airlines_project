@@ -20,7 +20,7 @@
             <column name="first_name" type="varchar(20)">
                 <constraints nullable="false"/>
             </column>
-            <column name="last_name" type="varchar(35)">
+            <column name="last_name" type="varchar(20)">
                 <constraints nullable="false"/>
             </column>
             <column name="password" type="varchar(32)">

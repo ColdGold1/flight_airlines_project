@@ -23,7 +23,9 @@
             <column name="subscription_id" type="bigint">
                 <constraints nullable="false"/>
             </column>
-            <column name="date_of_start_of_sub" type="timestamp without time zone"/>
+            <column name="date_of_start_of_sub" type="java.sql.Types.TIMESTAMP_WITH_TIMEZONE">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
         <addForeignKeyConstraint baseTableName="user_subs" baseColumnNames="user_id"
                                  constraintName="user_subs_user_fk" referencedTableName="user"
