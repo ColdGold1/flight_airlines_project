@@ -1,0 +1,17 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="create-role-type" author="Ilya Liburkin">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                    SELECT COUNT(*) FROM pg_type WHERE typname = 'role_type'
+                </sqlCheck>
+        </preConditions>
+        <sql dbms="postgresql">
+            CREATE TYPE role_type AS ENUM ('USER', 'ADMIN');
+        </sql>
+    </changeSet>
+</databaseChangeLog>
