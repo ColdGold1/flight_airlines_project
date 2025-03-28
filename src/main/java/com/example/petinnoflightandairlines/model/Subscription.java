@@ -1,7 +1,10 @@
 package com.example.petinnoflightandairlines.model;
 
-import com.example.petinnoflightandairlines.enums.SubscriptionType;
+import com.example.petinnoflightandairlines.model.enumtype.SubscriptionType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -16,11 +19,16 @@ public class Subscription {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 20)
     private String name;
 
+    @NotNull
     @Column(name = "count_of_bookings")
+    @Positive
     private int countOfBookings;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type_of_subscription")
     private SubscriptionType subscriptionType;

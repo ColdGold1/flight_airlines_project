@@ -1,7 +1,10 @@
 package com.example.petinnoflightandairlines.model;
 
-import com.example.petinnoflightandairlines.enums.RoleType;
+import com.example.petinnoflightandairlines.model.enumtype.RoleType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,20 +25,28 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Email
+    @NotNull
+    @Size(min = 1, max = 32)
     private String email;
 
-    @Column(nullable = false)
+    @NotNull
+    @Size(min = 1, max = 32)
     private String password;
 
-    @Column(name = "first_name", nullable = false)
+    @NotNull
+    @Column(name = "first_name")
+    @Size(min = 1, max = 20)
     private String firstName;
 
-    @Column(name = "last_name", nullable = false)
+    @NotNull
+    @Size(min = 1, max = 20)
+    @Column(name = "last_name")
     private String lastName;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
+    @Column(name = "role")
     private RoleType roleType;
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},

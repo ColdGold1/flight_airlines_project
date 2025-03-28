@@ -1,4 +1,4 @@
-package com.example.petinnoflightandairlines.enums;
+package com.example.petinnoflightandairlines.model.enumtype;
 
 public enum FlightType {
     BUSINESS,

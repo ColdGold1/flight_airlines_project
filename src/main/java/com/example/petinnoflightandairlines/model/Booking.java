@@ -1,10 +1,11 @@
 package com.example.petinnoflightandairlines.model;
 
-import com.example.petinnoflightandairlines.enums.BookingStatusType;
+import com.example.petinnoflightandairlines.model.enumtype.BookingStatusType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,20 +18,24 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "flight_id")
     private Flight flight;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status")
     private BookingStatusType bookingStatusType;
 
+    @NotNull
     @Column(name = "booking_datetime")
-    private LocalDateTime bookingDatetime;
+    private Instant bookingDatetime;
 
     @OneToMany(mappedBy = "booking",
             cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},

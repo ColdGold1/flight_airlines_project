@@ -1,6 +1,7 @@
 package com.example.petinnoflightandairlines.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,15 +22,23 @@ public class Aircraft {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
+    @Size(min = 1, max = 50)
     private String model;
 
+    @NotNull
+    @Pattern(regexp = "\\w{4}")
     @Column(name = "aircraft_icao")
     private String aircraftIcao;
 
+    @NotNull
+    @Pattern(regexp = "\\w{3}")
     @Column(name = "aircraft_iata")
     private String aircraftIata;
 
+    @NotNull
     @Column(name = "count_of_seats")
+    @Positive
     private int countOfSeats;
 
     @OneToMany(mappedBy = "aircraft",
