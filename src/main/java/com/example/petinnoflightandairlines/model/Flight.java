@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,12 +33,12 @@ public class Flight {
     @NotNull
     @ManyToOne
     @JoinColumn(name = "dep_airport_id")
-    private Airport depAirport;
+    private Airport departureAirport;
 
     @NotNull
     @ManyToOne
     @JoinColumn(name = "arr_airport_id", nullable = false)
-    private Airport arrAirport;
+    private Airport arrivalAirport;
 
     @NotNull
     @ManyToOne
@@ -47,11 +47,11 @@ public class Flight {
 
     @NotNull
     @Column(name = "departure_time")
-    private Instant departureTime;
+    private ZonedDateTime departureTime;
 
     @NotNull
     @Column(name = "arrival_time")
-    private Instant arrivalTime;
+    private ZonedDateTime arrivalTime;
 
     @NotNull
     @Enumerated(EnumType.STRING)

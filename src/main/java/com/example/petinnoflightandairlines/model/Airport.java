@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-//icao = 4
-//iata = 3
 
 @Entity
 @Table(name = "airport")
@@ -32,7 +30,7 @@ public class Airport {
     @NotNull
     @Column(name = "max_count_of_sync_flights")
     @Positive
-    private int maxCountOfSyncFlights;
+    private Integer maxCountOfSyncFlights;
 
     @NotNull
     @Pattern(regexp = "\\w{3}")
@@ -49,16 +47,16 @@ public class Airport {
     private String location;
 
     @OneToMany(
-            mappedBy = "arrAirport",
+            mappedBy = "arrivalAirport",
             cascade = {CascadeType.MERGE, CascadeType.PERSIST},
             orphanRemoval = true
     )
-    private List<Flight> arrFlights = new ArrayList<>();
+    private List<Flight> arrivalFlights = new ArrayList<>();
 
-    @OneToMany(mappedBy = "depAirport",
+    @OneToMany(mappedBy = "departureAirport",
             cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
             orphanRemoval = true
     )
-    private List<Flight> depFlights = new ArrayList<>();
+    private List<Flight> departureFlights = new ArrayList<>();
 
 }

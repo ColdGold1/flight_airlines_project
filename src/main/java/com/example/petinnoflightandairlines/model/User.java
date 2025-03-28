@@ -49,11 +49,13 @@ public class User {
     @Column(name = "role")
     private RoleType roleType;
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},
+    @OneToMany(mappedBy = "user",
+            cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},
             orphanRemoval = true)
-    private List<UserSub> userSub = new ArrayList<>();
+    private List<UserSub> userSubs = new ArrayList<>();
 
-    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},
+    @OneToMany(mappedBy = "user",
+            cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},
             orphanRemoval = true)
     private List<Booking> bookings = new ArrayList<>();
 }

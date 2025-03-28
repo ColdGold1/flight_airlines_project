@@ -26,7 +26,7 @@ public class Subscription {
     @NotNull
     @Column(name = "count_of_bookings")
     @Positive
-    private int countOfBookings;
+    private Integer countOfBookings;
 
     @NotNull
     @Enumerated(EnumType.STRING)

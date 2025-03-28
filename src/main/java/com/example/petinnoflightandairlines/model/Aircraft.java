@@ -39,7 +39,7 @@ public class Aircraft {
     @NotNull
     @Column(name = "count_of_seats")
     @Positive
-    private int countOfSeats;
+    private Integer countOfSeats;
 
     @OneToMany(mappedBy = "aircraft",
             cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},

@@ -2,14 +2,12 @@ package com.example.petinnoflightandairlines.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Entity
 @Data
@@ -25,7 +23,7 @@ public class UserSub {
     @NotNull
     @Column(name = "count_of_used_bookings")
     @PositiveOrZero
-    private int countOfUsedBookings;
+    private Integer countOfUsedBookings;
 
     @NotNull
     @ManyToOne
@@ -39,5 +37,5 @@ public class UserSub {
 
     @NotNull
     @Column(name = "date_of_start_of_sub")
-    private Instant dateOfStartOfSub;
+    private ZonedDateTime dateOfStartOfSub;
 }

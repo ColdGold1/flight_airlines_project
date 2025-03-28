@@ -1,7 +1,6 @@
 package com.example.petinnoflightandairlines.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -23,6 +22,6 @@ public class Ticket {
     @NotNull
     @Column(name = "seat_number")
     @Positive
-    private int seatNumber;
+    private Integer seatNumber;
 
 }

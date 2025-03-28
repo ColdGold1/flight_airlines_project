@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class Booking {
 
     @NotNull
     @Column(name = "booking_datetime")
-    private Instant bookingDatetime;
+    private ZonedDateTime bookingDatetime;
 
     @OneToMany(mappedBy = "booking",
             cascade = {CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.MERGE},
