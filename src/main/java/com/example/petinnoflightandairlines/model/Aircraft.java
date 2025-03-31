@@ -28,12 +28,12 @@ public class Aircraft {
 
     @NotNull
     @Pattern(regexp = "\\w{4}")
-    @Column(name = "aircraft_icao")
+    @Column(name = "aircraft_icao", unique = true)
     private String aircraftIcao;
 
     @NotNull
     @Pattern(regexp = "\\w{3}")
-    @Column(name = "aircraft_iata")
+    @Column(name = "aircraft_iata", unique = true)
     private String aircraftIata;
 
     @NotNull

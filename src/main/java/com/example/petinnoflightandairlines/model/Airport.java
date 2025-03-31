@@ -34,12 +34,12 @@ public class Airport {
 
     @NotNull
     @Pattern(regexp = "\\w{3}")
-    @Column(name = "airport_iata")
+    @Column(name = "airport_iata", unique = true)
     private String airportIata;
 
     @NotNull
     @Pattern(regexp = "\\w{4}")
-    @Column(name = "airport_icao")
+    @Column(name = "airport_icao", unique = true)
     private String airportIcao;
 
     @NotNull
@@ -48,7 +48,7 @@ public class Airport {
 
     @OneToMany(
             mappedBy = "arrivalAirport",
-            cascade = {CascadeType.MERGE, CascadeType.PERSIST},
+            cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
             orphanRemoval = true
     )
     private List<Flight> arrivalFlights = new ArrayList<>();

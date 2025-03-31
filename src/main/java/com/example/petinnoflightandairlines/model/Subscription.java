@@ -33,7 +33,8 @@ public class Subscription {
     @Column(name = "type_of_subscription")
     private SubscriptionType subscriptionType;
 
-    @OneToMany(mappedBy = "subscription", fetch = FetchType.EAGER,
-                orphanRemoval = true, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "subscription",
+            orphanRemoval = true,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     private List<UserSub> userSubs = new ArrayList<>();
 }
