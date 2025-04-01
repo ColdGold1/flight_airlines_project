@@ -1,7 +1,19 @@
 package com.example.petinnoflightandairlines.model;
 
 import com.example.petinnoflightandairlines.model.enumtype.FlightType;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -37,7 +49,7 @@ public class Flight {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name = "arr_airport_id", nullable = false)
+    @JoinColumn(name = "arr_airport_id")
     private Airport arrivalAirport;
 
     @NotNull
