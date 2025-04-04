@@ -53,6 +53,7 @@ public class Airport {
     @Size(min = 1, max = 50)
     private String location;
 
+    @Builder.Default
     @OneToMany(
             mappedBy = "arrivalAirport",
             cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
@@ -60,6 +61,8 @@ public class Airport {
     )
     private List<Flight> arrivalFlights = new ArrayList<>();
 
+
+    @Builder.Default
     @OneToMany(mappedBy = "departureAirport",
             cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH},
             orphanRemoval = true
