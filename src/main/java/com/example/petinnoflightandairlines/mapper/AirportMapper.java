@@ -3,12 +3,9 @@ package com.example.petinnoflightandairlines.mapper;
 import com.example.petinnoflightandairlines.dto.AirportDTO;
 import com.example.petinnoflightandairlines.model.Airport;
 import org.mapstruct.Mapper;
-import org.mapstruct.factory.Mappers;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface AirportMapper {
-
-    AirportMapper INSTANCE = Mappers.getMapper(AirportMapper.class);
 
     AirportDTO convertAirportToAirportDTO(Airport airport);
 

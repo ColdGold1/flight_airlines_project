@@ -17,7 +17,7 @@ public interface AirportService {
 
     Integer getAllFlightsConnectedWithAirport(Long airportId);
 
-    List<Airport> getAirportsByLocation(String location);
+    List<AirportDTO> getAirportsByLocation(String location);
 
     List<Airport> getAllAirports();
 }

@@ -8,13 +8,16 @@ import com.example.petinnoflightandairlines.repository.AirportRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -39,9 +42,11 @@ class AirportServiceImplTest {
     @Mock
     AirportRepository airportRepository;
 
+    AirportMapper airportMapper = Mappers.getMapper(AirportMapper.class);
+
     @BeforeEach
     void setUp() {
-        airportService = new AirportServiceImpl(airportRepository);
+        airportService = new AirportServiceImpl(airportRepository, airportMapper);
         airport = Airport
                 .builder()
                 .id(ID)
@@ -55,7 +60,7 @@ class AirportServiceImplTest {
     @Test
     void ifAirportWithSuchIataNotExists_thenAddAirport() {
         //given
-        AirportDTO airportDTO = AirportMapper.INSTANCE.convertAirportToAirportDTO(airport);
+        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.save(any(Airport.class))).thenReturn(airport);
@@ -75,7 +80,7 @@ class AirportServiceImplTest {
     @Test
     void ifAirportWithSuchIataExists_thenThrowException() {
         //given
-        AirportDTO airportDTO = AirportMapper.INSTANCE.convertAirportToAirportDTO(airport);
+        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.of(new Airport()));
         //when
@@ -121,8 +126,13 @@ class AirportServiceImplTest {
     void ifAirportExists_thenUpdateAirport() {
         //given
 
-
-        AirportDTO airportDTO = AirportMapper.INSTANCE.convertAirportToAirportDTO(airport);
+        AirportDTO airportDTO = AirportDTO.builder()
+                .name("random name")
+                .maxCountOfSyncFlights(7)
+                .airportIata("123")
+                .airportIcao("1234")
+                .location("random location")
+                .build();
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.findById(anyLong())).thenReturn(Optional.of(airport));
@@ -190,7 +200,7 @@ class AirportServiceImplTest {
         when(airportRepository.getAirportsByLocation(anyString())).thenReturn(List.of(new Airport(), new Airport()));
 
         //when
-        List<Airport> airports = airportService.getAirportsByLocation(airport.getLocation());
+        List<AirportDTO> airports = airportService.getAirportsByLocation(airport.getLocation());
 
         //then
         assertEquals(2, airports.size());
