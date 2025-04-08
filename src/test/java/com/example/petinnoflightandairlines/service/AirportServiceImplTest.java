@@ -1,6 +1,7 @@
 package com.example.petinnoflightandairlines.service;
 
 import com.example.petinnoflightandairlines.dto.AirportDTO;
+import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
 import com.example.petinnoflightandairlines.mapper.AirportMapper;
 import com.example.petinnoflightandairlines.model.Airport;
 import com.example.petinnoflightandairlines.model.Flight;
@@ -11,15 +12,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.jpa.domain.Specification;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -58,11 +60,12 @@ class AirportServiceImplTest {
     }
 
     @Test
-    void ifAirportWithSuchIataNotExists_thenAddAirport() {
+    void test_addAirport_shouldAddAirport() {
         //given
         AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
+        when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
         when(airportRepository.save(any(Airport.class))).thenReturn(airport);
         //when
         AirportDTO savedAirportDTO = airportService.addAirport(airportDTO);
@@ -74,44 +77,65 @@ class AirportServiceImplTest {
         assertEquals(LOCATION, savedAirportDTO.getLocation());
 
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
+        verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
         verify(airportRepository, times(1)).save(any(Airport.class));
     }
 
     @Test
-    void ifAirportWithSuchIataExists_thenThrowException() {
+    void test_addAirport_shouldThrowExceptionCuzOfIata() {
         //given
         AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
-
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.of(new Airport()));
+        when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
         //when
         RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.addAirport(airportDTO));
         //then
         assertEquals("Airport iata should be unique", re.getMessage());
-
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
+        verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
     }
 
     @Test
-    void ifAirportDoesntExist_thenThrowException() {
+    void test_addAirport_shouldThrowExceptionCuzOfIcao() {
         //given
-        when(airportRepository.findById(anyLong())).thenReturn(Optional.empty());
-
+        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
+        when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
+        when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.of(new Airport()));
         //when
-        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.getAirportDTO(1L));
-
+        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.addAirport(airportDTO));
         //then
-        assertEquals("Airport not found", re.getMessage());
-
-        verify(airportRepository, times(1)).findById(anyLong());
+        assertEquals("Airport icao should be unique", re.getMessage());
+        verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
+        verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
     }
 
     @Test
-    void ifAirportExists_thenGetAirport() {
+    void test_getAirport_shouldThrowException() {
         //given
-        when(airportRepository.findById(anyLong())).thenReturn(Optional.of(airport));
+        when(airportRepository.findAll()).thenReturn(new ArrayList<>());
 
         //when
-        AirportDTO foundAirportDTO = airportService.getAirportDTO(1L);
+        AirportSearchCriteria airportSearchCriteria = AirportSearchCriteria
+                .builder()
+                .build();
+        RuntimeException re = assertThrows(RuntimeException.class,
+                () -> airportService.getAirports(airportSearchCriteria).get(0));
+        //then
+        assertEquals("There are not airports with such fields", re.getMessage());
+
+        verify(airportRepository, times(1)).findAll();
+    }
+
+    @Test
+    void test_getAirport_shouldGetAirport() {
+        //given
+        when(airportRepository.findAll(any(Specification.class))).thenReturn(List.of(airport));
+
+        //when
+        AirportSearchCriteria criteria = AirportSearchCriteria.builder()
+                .id(1L)
+                .build();
+        AirportDTO foundAirportDTO = airportService.getAirports(criteria).get(0);
 
         //then
         assertEquals(NAME, foundAirportDTO.getName());
@@ -119,24 +143,26 @@ class AirportServiceImplTest {
         assertEquals(AIRPORT_ICAO, foundAirportDTO.getAirportIcao());
         assertEquals(LOCATION, foundAirportDTO.getLocation());
 
-        verify(airportRepository, times(1)).findById(anyLong());
+        verify(airportRepository, times(1)).findAll(any(Specification.class));
     }
 
     @Test
-    void ifAirportExists_thenUpdateAirport() {
+    void test_updateAirport_shouldUpdateAirport() {
         //given
-
         AirportDTO airportDTO = AirportDTO.builder()
                 .name("random name")
                 .maxCountOfSyncFlights(7)
-                .airportIata("123")
-                .airportIcao("1234")
+                .airportIata("321")
+                .airportIcao("4123")
                 .location("random location")
                 .build();
 
+        Airport airport1 = airportMapper.convertAirportDTOToAirport(airportDTO);
+
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
-        when(airportRepository.findById(anyLong())).thenReturn(Optional.of(airport));
-        when(airportRepository.save(any(Airport.class))).thenReturn(airport);
+        when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
+        when(airportRepository.findAll(any(Specification.class))).thenReturn(List.of(airport));
+        when(airportRepository.save(any(Airport.class))).thenReturn(airport1);
 
         //when
         AirportDTO updateAirportDTO = airportService.updateAirportDTO(1L, airportDTO);
@@ -149,12 +175,13 @@ class AirportServiceImplTest {
         assertEquals(airportDTO.getLocation(), updateAirportDTO.getLocation());
 
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
-        verify(airportRepository, times(1)).findById(anyLong());
+        verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
+        verify(airportRepository, times(1)).findAll(any(Specification.class));
         verify(airportRepository, times(1)).save(any(Airport.class));
     }
 
     @Test
-    void deleteAirport() {
+    void test_deleteAirport_shouldDeleteAirport() {
         //given
         doNothing().when(airportRepository).deleteById(anyLong());
         //when
@@ -164,47 +191,23 @@ class AirportServiceImplTest {
     }
 
     @Test
-    void ifAirportExists_thenCheckCountOfConnectedFlights() {
+    void test_getAllFlightsConnectedWithAirport_shouldGetCount() {
         //given
 
-        airport.getArrivalFlights().add(new Flight());
-        airport.getArrivalFlights().add(new Flight());
-        airport.getArrivalFlights().add(new Flight());
+        airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());
+        airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());
+        airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());
 
-        airport.getDepartureFlights().add(new Flight());
-        airport.getDepartureFlights().add(new Flight());
-        airport.getDepartureFlights().add(new Flight());
+        airport.getDepartureFlights().add(Flight.builder().flightNumber("123").build());
+        airport.getDepartureFlights().add(Flight.builder().flightNumber("123").build());
+        airport.getDepartureFlights().add(Flight.builder().flightNumber("123").build());
 
-        when(airportRepository.findById(anyLong())).thenReturn(Optional.of(airport));
+        when(airportRepository.findAirportWithFlightsById(anyLong())).thenReturn(airport);
 
         Integer count = airportService.getAllFlightsConnectedWithAirport(1L);
 
         assertEquals(6, count);
-        verify(airportRepository, times(1)).findById(anyLong());
+        verify(airportRepository, times(1)).findAirportWithFlightsById(anyLong());
     }
 
-
-    @Test
-    void ifLocationIsBad_thenThrowException() {
-        //given
-        //when
-        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.getAirportsByLocation(""));
-
-        //then
-        assertEquals("Location is empty or its length is larger than 50", re.getMessage());
-    }
-
-    @Test
-    void ifAllGood_thenGet() {
-        //given
-        when(airportRepository.getAirportsByLocation(anyString())).thenReturn(List.of(new Airport(), new Airport()));
-
-        //when
-        List<AirportDTO> airports = airportService.getAirportsByLocation(airport.getLocation());
-
-        //then
-        assertEquals(2, airports.size());
-
-        verify(airportRepository, times(1)).getAirportsByLocation(anyString());
-    }
 }

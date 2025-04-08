@@ -1,7 +1,7 @@
 package com.example.petinnoflightandairlines.service;
 
 import com.example.petinnoflightandairlines.dto.AirportDTO;
-import com.example.petinnoflightandairlines.model.Airport;
+import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ public interface AirportService {
 
     AirportDTO addAirport(AirportDTO airportDTO);
 
-    AirportDTO getAirportDTO(Long airportId);
+    List<AirportDTO> getAirports(AirportSearchCriteria airportSearchCriteria);
 
     AirportDTO updateAirportDTO(Long airportId, AirportDTO airportDTO);
 
@@ -17,7 +17,4 @@ public interface AirportService {
 
     Integer getAllFlightsConnectedWithAirport(Long airportId);
 
-    List<AirportDTO> getAirportsByLocation(String location);
-
-    List<Airport> getAllAirports();
 }

@@ -1,13 +1,16 @@
 package com.example.petinnoflightandairlines.service;
 
 import com.example.petinnoflightandairlines.dto.AirportDTO;
+import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
 import com.example.petinnoflightandairlines.mapper.AirportMapper;
 import com.example.petinnoflightandairlines.model.Airport;
 import com.example.petinnoflightandairlines.repository.AirportRepository;
+import com.example.petinnoflightandairlines.specifications.AirportSpecification;
 import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,7 +28,7 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public AirportDTO addAirport(@Valid AirportDTO airportDTO) {
 
-        checkAirportIata(airportDTO);
+        checkAirportCodes(airportDTO);
         Airport airport = airportMapper.convertAirportDTOToAirport(airportDTO);
 
         Airport savedAirport = saveAirport(airport);
@@ -33,26 +36,44 @@ public class AirportServiceImpl implements AirportService {
     }
 
     @Override
-    public AirportDTO getAirportDTO(Long airportId) {
+    public List<AirportDTO> getAirports(AirportSearchCriteria criteria) {
 
-        return airportMapper.convertAirportToAirportDTO(getAirportById(airportId));
+        List<Airport> airports;
+
+        if (criteria.isEmpty()) {
+            airports = airportRepository.findAll();
+        } else {
+            airports = getAirportsBy(criteria);
+        }
+
+        if (airports.isEmpty()) {
+            throw new RuntimeException("There are not airports with such fields");
+        }
+
+        return airports.stream()
+                .map(airportMapper::convertAirportToAirportDTO)
+                .toList();
     }
 
     @Override
     public AirportDTO updateAirportDTO(Long airportId,
                                        @Valid AirportDTO airportDTO) {
 
-        checkAirportIata(airportDTO);
-        Airport foundAirport = getAirportById(airportId);
+        checkAirportCodes(airportDTO);
+        AirportSearchCriteria criteria = AirportSearchCriteria
+                .builder()
+                .id(airportId)
+                .build();
+        AirportDTO foundAirportDTO = getAirports(criteria).get(0);
         log.info("started update of airport {}", airportId);
 
-        foundAirport.setName(airportDTO.getName());
-        foundAirport.setAirportIcao(airportDTO.getAirportIcao());
-        foundAirport.setAirportIata(airportDTO.getAirportIata());
-        foundAirport.setLocation(airportDTO.getLocation());
-        foundAirport.setMaxCountOfSyncFlights(airportDTO.getMaxCountOfSyncFlights());
+        foundAirportDTO.setName(airportDTO.getName());
+        foundAirportDTO.setAirportIcao(airportDTO.getAirportIcao());
+        foundAirportDTO.setAirportIata(airportDTO.getAirportIata());
+        foundAirportDTO.setLocation(airportDTO.getLocation());
+        foundAirportDTO.setMaxCountOfSyncFlights(airportDTO.getMaxCountOfSyncFlights());
 
-        Airport savedAirport = saveAirport(foundAirport);
+        Airport savedAirport = saveAirport(foundAirportDTO);
         return airportMapper.convertAirportToAirportDTO(savedAirport);
     }
 
@@ -65,28 +86,16 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Integer getAllFlightsConnectedWithAirport(Long airportId) {
 
-        Airport airport = getAirportById(airportId);
-        return airport.getDepartureFlights().size()
-                + airport.getArrivalFlights().size();
+        Airport foundAirportDTO = airportRepository.findAirportWithFlightsById(airportId);
 
+        return foundAirportDTO.getDepartureFlights().size()
+                + foundAirportDTO.getArrivalFlights().size();
     }
 
-    @Override
-    public List<AirportDTO> getAirportsByLocation(String location) {
-        if (StringUtils.isEmpty(location) || location.length() > 50) {
-            throw new RuntimeException("Location is empty or its length is larger than 50");
-        }
+    private List<Airport> getAirportsBy(AirportSearchCriteria criteria) {
+        Specification<Airport> spec = AirportSpecification.build(criteria);
 
-        return airportRepository.getAirportsByLocation(location)
-                .stream()
-                .map(airportMapper::convertAirportToAirportDTO)
-                .toList();
-    }
-
-    @Override
-    public List<Airport> getAllAirports() {
-
-        return airportRepository.findAll();
+        return airportRepository.findAll(spec);
     }
 
     private Airport saveAirport(Airport airport) {
@@ -94,17 +103,21 @@ public class AirportServiceImpl implements AirportService {
         return airportRepository.save(airport);
     }
 
-    private Airport getAirportById(Long airportId) {
+    private Airport saveAirport(AirportDTO airportDTO) {
 
-        return airportRepository.findById(airportId)
-                .orElseThrow(() -> new RuntimeException("Airport not found"));
+        return airportRepository.save(airportMapper.convertAirportDTOToAirport(airportDTO));
     }
 
-    private void checkAirportIata(AirportDTO airportDTO){
+    private void checkAirportCodes(AirportDTO airportDTO) {
 
-        Optional<Airport> airportOptional = airportRepository.getAirportByAirportIata(airportDTO.getAirportIata());
-        if (airportOptional.isPresent()) {
+        Optional<Airport> airportIataOptional = airportRepository.getAirportByAirportIata(airportDTO.getAirportIata());
+        Optional<Airport> airportIcaoOptional = airportRepository.getAirportByAirportIcao(airportDTO.getAirportIcao());
+
+        if (airportIataOptional.isPresent()) {
             throw new RuntimeException("Airport iata should be unique");
+        }
+        if (airportIcaoOptional.isPresent()) {
+            throw new RuntimeException("Airport icao should be unique");
         }
     }
 

@@ -1,17 +1,20 @@
 package com.example.petinnoflightandairlines.service;
 
 import com.example.petinnoflightandairlines.dto.AirportDTO;
+import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
 import com.example.petinnoflightandairlines.mapper.AirportMapper;
 import com.example.petinnoflightandairlines.model.Airport;
 import com.example.petinnoflightandairlines.repository.AirportRepository;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +22,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-@Transactional
 @SpringBootTest
 @RequiredArgsConstructor
 class AirportServiceIT {
@@ -33,19 +35,42 @@ class AirportServiceIT {
     @Autowired
     private AirportMapper airportMapper;
 
+    @Container
+    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
+
     private static final Integer MAX_COUNT_OF_SYNC_FLIGHTS = 4;
     private static final String NAME = "some_name";
     private static final String AIRPORT_IATA = "333";
     private static final String AIRPORT_ICAO = "3334";
     private static final String LOCATION = "some location";
 
+    @DynamicPropertySource
+    static void dynamicPropertySource(DynamicPropertyRegistry registry) {
+
+        registry.add("spring.datasource.url", postgreSQLContainer::getJdbcUrl);
+        registry.add("spring.datasource.password", postgreSQLContainer::getPassword);
+        registry.add("spring.datasource.username", postgreSQLContainer::getUsername);
+    }
+
+    @BeforeAll
+    static void beforeAll() {
+        postgreSQLContainer.start();
+    }
+
+    @AfterAll
+    static void afterAll() {
+        postgreSQLContainer.stop();
+    }
+
     @BeforeEach
     void setUp() {
         airportService = new AirportServiceImpl(airportRepository, airportMapper);
+        airportRepository.deleteAll();
     }
 
+    //TODO
     @Test
-    void ifAllGood_thenAddAirport() {
+    void test_addAirport_shouldAddAirport() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -67,7 +92,7 @@ class AirportServiceIT {
     }
 
     @Test
-    void ifIataIsBad_whenAddAirport_thenThrowException() {
+    void test_addAirport_shouldThrowException() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -80,12 +105,13 @@ class AirportServiceIT {
         AirportDTO newAirportDTO = airportMapper.convertAirportToAirportDTO(newAirport);
         //when
         //then
-        ConstraintViolationException cve = assertThrows(ConstraintViolationException.class, () -> airportService.addAirport(newAirportDTO));
+        ConstraintViolationException cve = assertThrows(ConstraintViolationException.class,
+                () -> airportService.addAirport(newAirportDTO));
         log.info("mes = {}", cve.getMessage());
     }
 
     @Test
-    void ifAllGood_thenGetAirport() {
+    void test_getAirport_shouldGetAirport() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -97,7 +123,10 @@ class AirportServiceIT {
 
         Airport airport = airportRepository.save(newAirport);
         //when
-        AirportDTO foundAirportDTO = airportService.getAirportDTO(airport.getId());
+        AirportSearchCriteria criteria = AirportSearchCriteria.builder()
+                .id(airport.getId())
+                .build();
+        AirportDTO foundAirportDTO = airportService.getAirports(criteria).get(0);
         //then
         assertNotNull(foundAirportDTO);
         assertEquals(NAME, foundAirportDTO.getName());
@@ -108,7 +137,7 @@ class AirportServiceIT {
     }
 
     @Test
-    void ifAllGood_thenUpdateAirportDTO() {
+    void test_updateAirport_shouldUpdateAirportDTO() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -138,7 +167,7 @@ class AirportServiceIT {
     }
 
     @Test
-    void ifAllGood_thenDeleteAirport() {
+    void test_deleteAirport_shouldDeleteAirport() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -155,7 +184,7 @@ class AirportServiceIT {
         assertTrue(airportOptional.isEmpty());
     }
 
-//    TODO cuz of I need aircraft
+//    TODO cuz I need aircraft
 //    @Test
 //    void getAllFlightsConnectedWithAirport() {
 //        //given
@@ -164,7 +193,7 @@ class AirportServiceIT {
 //    }
 
     @Test
-    void ifAllGood_thenGetAirportsByLocation() {
+    void test_getAirportByLocation_shouldGetAirportsByLocation() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -193,13 +222,17 @@ class AirportServiceIT {
         airportRepository.save(airport2);
         airportRepository.save(newAirport);
         //when
-        List<AirportDTO> airportsByLocation = airportService.getAirportsByLocation(LOCATION);
+        AirportSearchCriteria criteria = AirportSearchCriteria.builder()
+                .location(LOCATION)
+                .build();
+
+        List<AirportDTO> airportsByLocation = airportService.getAirports(criteria);
         //then
         assertEquals(2, airportsByLocation.size());
     }
 
     @Test
-    void getAllAirports() {
+    void test_getAllAirports_shouldGetAllAirports() {
         //given
         Airport newAirport = Airport.builder()
                 .name(NAME)
@@ -219,8 +252,9 @@ class AirportServiceIT {
 
         airportRepository.save(newAirport);
         airportRepository.save(airport);
+        AirportSearchCriteria criteria = new AirportSearchCriteria();
         //when
-        List<Airport> airportList = airportService.getAllAirports();
+        List<AirportDTO> airportList = airportService.getAirports(criteria);
         //then
         assertEquals(2, airportList.size());
     }

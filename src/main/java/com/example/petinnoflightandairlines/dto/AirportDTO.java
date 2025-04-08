@@ -9,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,18 +20,18 @@ public class AirportDTO {
     private String name;
 
     @NotNull
-    @Positive(message = "count of sync flights should be positive")
+    @Positive(message = "Count of sync flights should be positive")
     private Integer maxCountOfSyncFlights;
 
     @NotNull
-    @Pattern(regexp = "\\w{3}", message = "iata should contain 3 exactly numbers")
+    @Pattern(regexp = "\\w{3}", message = "Iata should contain 3 exactly numbers")
     private String airportIata;
 
     @NotNull
-    @Pattern(regexp = "\\w{4}", message = "iata should contain 4 exactly numbers")
+    @Pattern(regexp = "\\w{4}", message = "Iata should contain 4 exactly numbers")
     private String airportIcao;
 
     @NotNull
-    @Size(min = 1, max = 50, message = "location must be in 50 symbols")
+    @Size(min = 1, max = 50, message = "Location must be in 50 symbols")
     private String location;
 }
