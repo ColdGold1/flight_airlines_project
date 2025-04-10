@@ -11,12 +11,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +27,24 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @RequiredArgsConstructor
 class AirportServiceIT {
+
+    @Container
+    static PostgreSQLContainer<?> postgreSQLContainer =
+            new PostgreSQLContainer<>("postgres:latest");
+
+    private static final Integer MAX_COUNT_OF_SYNC_FLIGHTS = 4;
+    private static final String NAME = "some_name";
+    private static final String AIRPORT_IATA = "333";
+    private static final String AIRPORT_ICAO = "3334";
+    private static final String LOCATION = "some location";
+
+    private final Airport newAirport = Airport.builder()
+            .name(NAME)
+            .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
+            .airportIata(AIRPORT_IATA)
+            .airportIcao(AIRPORT_ICAO)
+            .location(LOCATION)
+            .build();
 
     @Autowired
     private AirportService airportService;
@@ -35,14 +55,6 @@ class AirportServiceIT {
     @Autowired
     private AirportMapper airportMapper;
 
-    @Container
-    static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:latest");
-
-    private static final Integer MAX_COUNT_OF_SYNC_FLIGHTS = 4;
-    private static final String NAME = "some_name";
-    private static final String AIRPORT_IATA = "333";
-    private static final String AIRPORT_ICAO = "3334";
-    private static final String LOCATION = "some location";
 
     @DynamicPropertySource
     static void dynamicPropertySource(DynamicPropertyRegistry registry) {
@@ -68,21 +80,18 @@ class AirportServiceIT {
         airportRepository.deleteAll();
     }
 
-    //TODO
     @Test
-    void test_addAirport_shouldAddAirport() {
+    void test_save_shouldSaveA() {
         //given
-        Airport newAirport = Airport.builder()
+        AirportDTO newAirportDTO = AirportDTO.builder()
                 .name(NAME)
                 .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
                 .airportIata(AIRPORT_IATA)
                 .airportIcao(AIRPORT_ICAO)
                 .location(LOCATION)
                 .build();
-
-        AirportDTO newAirportDTO = airportMapper.convertAirportToAirportDTO(newAirport);
         //when
-        AirportDTO airportDTO = airportService.addAirport(newAirportDTO);
+        AirportDTO airportDTO = airportService.save(newAirportDTO);
         //then
         assertNotNull(airportDTO);
         assertEquals(NAME, airportDTO.getName());
@@ -92,41 +101,34 @@ class AirportServiceIT {
     }
 
     @Test
-    void test_addAirport_shouldThrowException() {
+    void test_save_shouldThrowException() {
         //given
-        Airport newAirport = Airport.builder()
+        AirportDTO airportDTO = AirportDTO.builder()
                 .name(NAME)
                 .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
                 .airportIata("12")
                 .airportIcao(AIRPORT_ICAO)
                 .location(LOCATION)
                 .build();
-
-        AirportDTO newAirportDTO = airportMapper.convertAirportToAirportDTO(newAirport);
         //when
         //then
         ConstraintViolationException cve = assertThrows(ConstraintViolationException.class,
-                () -> airportService.addAirport(newAirportDTO));
+                () -> airportService.save(airportDTO));
         log.info("mes = {}", cve.getMessage());
     }
 
     @Test
-    void test_getAirport_shouldGetAirport() {
+    void test_getAirports_shouldGetAirport() {
         //given
-        Airport newAirport = Airport.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
-
         Airport airport = airportRepository.save(newAirport);
         //when
         AirportSearchCriteria criteria = AirportSearchCriteria.builder()
                 .id(airport.getId())
                 .build();
-        AirportDTO foundAirportDTO = airportService.getAirports(criteria).get(0);
+
+        Pageable pageable = PageRequest.ofSize(1);
+        Page<AirportDTO> foundAirportPage = airportService.getAirports(criteria, pageable);
+        AirportDTO foundAirportDTO = foundAirportPage.getContent().get(0);
         //then
         assertNotNull(foundAirportDTO);
         assertEquals(NAME, foundAirportDTO.getName());
@@ -137,15 +139,8 @@ class AirportServiceIT {
     }
 
     @Test
-    void test_updateAirport_shouldUpdateAirportDTO() {
+    void test_updateAirport_shouldUpdateAirport() {
         //given
-        Airport newAirport = Airport.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
         Airport airport = airportRepository.save(newAirport);
 
         AirportDTO airportDTO = AirportDTO.builder()
@@ -156,7 +151,7 @@ class AirportServiceIT {
                 .location("random location")
                 .build();
         //when
-        AirportDTO foundAirportDTO = airportService.updateAirportDTO(airport.getId(), airportDTO);
+        AirportDTO foundAirportDTO = airportService.updateAirport(airport.getId(), airportDTO);
         //then
         assertNotNull(foundAirportDTO);
         assertEquals(airportDTO.getName(), foundAirportDTO.getName());
@@ -169,13 +164,6 @@ class AirportServiceIT {
     @Test
     void test_deleteAirport_shouldDeleteAirport() {
         //given
-        Airport newAirport = Airport.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
         Airport airport = airportRepository.save(newAirport);
         //when
         airportService.deleteAirport(airport.getId());
@@ -195,14 +183,6 @@ class AirportServiceIT {
     @Test
     void test_getAirportByLocation_shouldGetAirportsByLocation() {
         //given
-        Airport newAirport = Airport.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
-
         Airport airport1 = Airport.builder()
                 .name("random name")
                 .maxCountOfSyncFlights(7)
@@ -218,30 +198,30 @@ class AirportServiceIT {
                 .airportIcao("1235")
                 .location("random location")
                 .build();
+
+        Airport airport3 = Airport.builder()
+                .name("random name1")
+                .maxCountOfSyncFlights(7)
+                .airportIata("125")
+                .airportIcao("1236")
+                .location(LOCATION)
+                .build();
+
         airportRepository.save(airport1);
         airportRepository.save(airport2);
+        airportRepository.save(airport3);
         airportRepository.save(newAirport);
         //when
         AirportSearchCriteria criteria = AirportSearchCriteria.builder()
                 .location(LOCATION)
                 .build();
-
-        List<AirportDTO> airportsByLocation = airportService.getAirports(criteria);
         //then
-        assertEquals(2, airportsByLocation.size());
+        assertEquals(3, getCountOfElementsInList(criteria, 3));
     }
 
     @Test
-    void test_getAllAirports_shouldGetAllAirports() {
+    void test_getAirports_shouldGetAllAirports() {
         //given
-        Airport newAirport = Airport.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
-
         Airport airport = Airport.builder()
                 .name("random name")
                 .maxCountOfSyncFlights(7)
@@ -250,13 +230,70 @@ class AirportServiceIT {
                 .location("random location")
                 .build();
 
+        Airport airport1 = Airport.builder()
+                .name("random name")
+                .maxCountOfSyncFlights(7)
+                .airportIata("124")
+                .airportIcao("1233")
+                .location("random location")
+                .build();
+
         airportRepository.save(newAirport);
         airportRepository.save(airport);
+        airportRepository.save(airport1);
         AirportSearchCriteria criteria = new AirportSearchCriteria();
         //when
-        List<AirportDTO> airportList = airportService.getAirports(criteria);
         //then
-        assertEquals(2, airportList.size());
+        assertEquals(3, getCountOfElementsInList(criteria, 2));
     }
 
+    @Test
+    void test_getAirports_shouldGetAirportOnSecondPage() {
+        //given
+        Airport airport = Airport.builder()
+                .name("random name")
+                .maxCountOfSyncFlights(7)
+                .airportIata("123")
+                .airportIcao("1234")
+                .location("random location")
+                .build();
+
+        Airport airport1 = Airport.builder()
+                .name("random name")
+                .maxCountOfSyncFlights(7)
+                .airportIata("124")
+                .airportIcao("1233")
+                .location("random location")
+                .build();
+
+        airportRepository.save(newAirport);
+        airportRepository.save(airport);
+        airportRepository.save(airport1);
+        AirportSearchCriteria criteria = new AirportSearchCriteria();
+        //when
+        Pageable pageable = PageRequest.of(1,2);
+        Page<AirportDTO> page = airportService.getAirports(criteria,pageable);
+        AirportDTO airportDTO = page.getContent().get(0);
+//        then
+        assertEquals("124",airportDTO.getAirportIata());
+        assertEquals("1233",airportDTO.getAirportIcao());
+    }
+
+    private Integer getCountOfElementsInList(AirportSearchCriteria criteria,
+                                             Integer countOfElementsOnAPage) {
+
+        Page<AirportDTO> page;
+        int pageNumber = 0;
+        int countOfRecords = 0;
+        do {
+            Pageable pageable = PageRequest.of(pageNumber, countOfElementsOnAPage);
+            page = airportService.getAirports(criteria, pageable);
+            log.info("On page {} elements {}", pageNumber, page.getContent().size());
+            countOfRecords += page.getContent().size();
+            pageNumber++;
+        }
+        while (!page.isLast());
+
+        return countOfRecords;
+    }
 }

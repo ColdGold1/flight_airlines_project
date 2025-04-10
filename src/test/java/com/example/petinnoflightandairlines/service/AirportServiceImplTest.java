@@ -12,6 +12,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;
@@ -31,7 +35,16 @@ import static org.mockito.Mockito.doNothing;
 @ExtendWith(MockitoExtension.class)
 class AirportServiceImplTest {
 
-    private Airport airport;
+    private final Airport airport = Airport
+            .builder()
+            .id(ID)
+            .airportIata(AIRPORT_IATA)
+            .airportIcao(AIRPORT_ICAO)
+            .name(NAME)
+            .location(LOCATION)
+            .build();
+
+    private AirportDTO airportDTO;
 
     private static final Long ID = 1L;
     private static final String NAME = "Some name";
@@ -49,26 +62,19 @@ class AirportServiceImplTest {
     @BeforeEach
     void setUp() {
         airportService = new AirportServiceImpl(airportRepository, airportMapper);
-        airport = Airport
-                .builder()
-                .id(ID)
-                .airportIata(AIRPORT_IATA)
-                .airportIcao(AIRPORT_ICAO)
-                .name(NAME)
-                .location(LOCATION)
-                .build();
+
+        airportDTO = airportMapper.convertAirportToAirportDTO(airport);
+
     }
 
     @Test
-    void test_addAirport_shouldAddAirport() {
+    void test_save_shouldSaveAirport() {
         //given
-        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
-
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
         when(airportRepository.save(any(Airport.class))).thenReturn(airport);
         //when
-        AirportDTO savedAirportDTO = airportService.addAirport(airportDTO);
+        AirportDTO savedAirportDTO = airportService.save(airportDTO);
         //then
         assertNotNull(savedAirportDTO);
         assertEquals(AIRPORT_IATA, savedAirportDTO.getAirportIata());
@@ -82,13 +88,12 @@ class AirportServiceImplTest {
     }
 
     @Test
-    void test_addAirport_shouldThrowExceptionCuzOfIata() {
+    void test_save_shouldThrowExceptionCuzOfIata() {
         //given
-        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.of(new Airport()));
         when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
         //when
-        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.addAirport(airportDTO));
+        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.save(airportDTO));
         //then
         assertEquals("Airport iata should be unique", re.getMessage());
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
@@ -96,13 +101,12 @@ class AirportServiceImplTest {
     }
 
     @Test
-    void test_addAirport_shouldThrowExceptionCuzOfIcao() {
+    void test_save_shouldThrowExceptionCuzOfIcao() {
         //given
-        AirportDTO airportDTO = airportMapper.convertAirportToAirportDTO(airport);
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.of(new Airport()));
         //when
-        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.addAirport(airportDTO));
+        RuntimeException re = assertThrows(RuntimeException.class, () -> airportService.save(airportDTO));
         //then
         assertEquals("Airport icao should be unique", re.getMessage());
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
@@ -110,40 +114,44 @@ class AirportServiceImplTest {
     }
 
     @Test
-    void test_getAirport_shouldThrowException() {
+    void test_getAirports_shouldGetEmptyList() {
         //given
-        when(airportRepository.findAll()).thenReturn(new ArrayList<>());
+        when(airportRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(new ArrayList<>()));
 
         //when
         AirportSearchCriteria airportSearchCriteria = AirportSearchCriteria
                 .builder()
                 .build();
-        RuntimeException re = assertThrows(RuntimeException.class,
-                () -> airportService.getAirports(airportSearchCriteria).get(0));
-        //then
-        assertEquals("There are not airports with such fields", re.getMessage());
 
-        verify(airportRepository, times(1)).findAll();
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<AirportDTO> airportPage = airportService.getAirports(airportSearchCriteria, pageable);
+        List<AirportDTO> airports = airportPage.getContent();
+        //then
+        assertEquals(0,airports.size());
+        verify(airportRepository, times(1)).findAll(any(Pageable.class));
     }
 
     @Test
-    void test_getAirport_shouldGetAirport() {
+    void test_getAirports_shouldGetAirport() {
         //given
-        when(airportRepository.findAll(any(Specification.class))).thenReturn(List.of(airport));
+        when(airportRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(airport)));
 
         //when
         AirportSearchCriteria criteria = AirportSearchCriteria.builder()
                 .id(1L)
                 .build();
-        AirportDTO foundAirportDTO = airportService.getAirports(criteria).get(0);
-
+        Pageable pageable = PageRequest.of(0,1);
+        Page<AirportDTO> airportPage = airportService.getAirports(criteria,pageable);
+        AirportDTO foundAirportDTO = airportPage.getContent().get(0);
         //then
         assertEquals(NAME, foundAirportDTO.getName());
         assertEquals(AIRPORT_IATA, foundAirportDTO.getAirportIata());
         assertEquals(AIRPORT_ICAO, foundAirportDTO.getAirportIcao());
         assertEquals(LOCATION, foundAirportDTO.getLocation());
 
-        verify(airportRepository, times(1)).findAll(any(Specification.class));
+        verify(airportRepository, times(1))
+                .findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
@@ -161,11 +169,12 @@ class AirportServiceImplTest {
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
-        when(airportRepository.findAll(any(Specification.class))).thenReturn(List.of(airport));
+        when(airportRepository.findAll(any(Specification.class), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(airport)));
         when(airportRepository.save(any(Airport.class))).thenReturn(airport1);
 
         //when
-        AirportDTO updateAirportDTO = airportService.updateAirportDTO(1L, airportDTO);
+        AirportDTO updateAirportDTO = airportService.updateAirport(1L, airportDTO);
 
         //then
         assertNotNull(updateAirportDTO);
@@ -176,7 +185,7 @@ class AirportServiceImplTest {
 
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
         verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
-        verify(airportRepository, times(1)).findAll(any(Specification.class));
+        verify(airportRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
         verify(airportRepository, times(1)).save(any(Airport.class));
     }
 
@@ -192,8 +201,8 @@ class AirportServiceImplTest {
 
     @Test
     void test_getAllFlightsConnectedWithAirport_shouldGetCount() {
-        //given
 
+        //given
         airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());
         airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());
         airport.getArrivalFlights().add(Flight.builder().flightNumber("123").build());

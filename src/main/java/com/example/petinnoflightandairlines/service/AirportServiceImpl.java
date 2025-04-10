@@ -6,14 +6,15 @@ import com.example.petinnoflightandairlines.mapper.AirportMapper;
 import com.example.petinnoflightandairlines.model.Airport;
 import com.example.petinnoflightandairlines.repository.AirportRepository;
 import com.example.petinnoflightandairlines.specifications.AirportSpecification;
-import io.micrometer.common.util.StringUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,7 +27,7 @@ public class AirportServiceImpl implements AirportService {
     private final AirportMapper airportMapper;
 
     @Override
-    public AirportDTO addAirport(@Valid AirportDTO airportDTO) {
+    public AirportDTO save(@Valid AirportDTO airportDTO) {
 
         checkAirportCodes(airportDTO);
         Airport airport = airportMapper.convertAirportDTOToAirport(airportDTO);
@@ -36,36 +37,36 @@ public class AirportServiceImpl implements AirportService {
     }
 
     @Override
-    public List<AirportDTO> getAirports(AirportSearchCriteria criteria) {
-
-        List<Airport> airports;
+    public Page<AirportDTO> getAirports(AirportSearchCriteria criteria,
+                                        Pageable pageable) {
+        Page<Airport> airportPage;
 
         if (criteria.isEmpty()) {
-            airports = airportRepository.findAll();
+            airportPage = airportRepository.findAll(pageable);
         } else {
-            airports = getAirportsBy(criteria);
+            Specification<Airport> spec = AirportSpecification.build(criteria);
+            airportPage = airportRepository.findAll(spec, pageable);
         }
 
-        if (airports.isEmpty()) {
-            throw new RuntimeException("There are not airports with such fields");
-        }
-
-        return airports.stream()
-                .map(airportMapper::convertAirportToAirportDTO)
-                .toList();
+        return airportPage.map(airportMapper::convertAirportToAirportDTO);
     }
 
     @Override
-    public AirportDTO updateAirportDTO(Long airportId,
-                                       @Valid AirportDTO airportDTO) {
+    public AirportDTO updateAirport(Long airportId,
+                                    @Valid AirportDTO airportDTO) {
 
         checkAirportCodes(airportDTO);
         AirportSearchCriteria criteria = AirportSearchCriteria
                 .builder()
                 .id(airportId)
                 .build();
-        AirportDTO foundAirportDTO = getAirports(criteria).get(0);
+
+        Pageable pageable = PageRequest.of(0, 1);
+
+        Page<AirportDTO> airportPage = getAirports(criteria, pageable);
         log.info("started update of airport {}", airportId);
+
+        AirportDTO foundAirportDTO = airportPage.getContent().get(0);
 
         foundAirportDTO.setName(airportDTO.getName());
         foundAirportDTO.setAirportIcao(airportDTO.getAirportIcao());
@@ -90,12 +91,6 @@ public class AirportServiceImpl implements AirportService {
 
         return foundAirportDTO.getDepartureFlights().size()
                 + foundAirportDTO.getArrivalFlights().size();
-    }
-
-    private List<Airport> getAirportsBy(AirportSearchCriteria criteria) {
-        Specification<Airport> spec = AirportSpecification.build(criteria);
-
-        return airportRepository.findAll(spec);
     }
 
     private Airport saveAirport(Airport airport) {

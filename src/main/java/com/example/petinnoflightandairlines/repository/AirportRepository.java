@@ -15,6 +15,6 @@ public interface AirportRepository extends JpaRepository<Airport, Long>, JpaSpec
 
     Optional<Airport> getAirportByAirportIcao(String icao);
 
-    @EntityGraph(attributePaths = {"arrivalFlights","departureFlights"})
+    @EntityGraph(attributePaths = {"arrivalFlights", "departureFlights"})
     Airport findAirportWithFlightsById(Long airportId);
 }

@@ -2,16 +2,16 @@ package com.example.petinnoflightandairlines.service;
 
 import com.example.petinnoflightandairlines.dto.AirportDTO;
 import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface AirportService {
 
-    AirportDTO addAirport(AirportDTO airportDTO);
+    AirportDTO save(AirportDTO airportDTO);
 
-    List<AirportDTO> getAirports(AirportSearchCriteria airportSearchCriteria);
+    Page<AirportDTO> getAirports(AirportSearchCriteria airportSearchCriteria, Pageable pageable);
 
-    AirportDTO updateAirportDTO(Long airportId, AirportDTO airportDTO);
+    AirportDTO updateAirport(Long airportId, AirportDTO airportDTO);
 
     void deleteAirport(Long airportId);
 
