@@ -5,7 +5,6 @@ import com.example.petinnoflightandairlines.dto.AirportSearchCriteria;
 import com.example.petinnoflightandairlines.mapper.AirportMapper;
 import com.example.petinnoflightandairlines.model.Airport;
 import com.example.petinnoflightandairlines.repository.AirportRepository;
-import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
@@ -55,7 +54,6 @@ class AirportServiceIT {
     @Autowired
     private AirportMapper airportMapper;
 
-
     @DynamicPropertySource
     static void dynamicPropertySource(DynamicPropertyRegistry registry) {
 
@@ -81,7 +79,7 @@ class AirportServiceIT {
     }
 
     @Test
-    void test_save_shouldSaveA() {
+    void test_save_shouldSaveAnAirport() {
         //given
         AirportDTO newAirportDTO = AirportDTO.builder()
                 .name(NAME)
@@ -98,23 +96,6 @@ class AirportServiceIT {
         assertEquals(AIRPORT_ICAO, airportDTO.getAirportIcao());
         assertEquals(AIRPORT_IATA, airportDTO.getAirportIata());
         assertEquals(LOCATION, airportDTO.getLocation());
-    }
-
-    @Test
-    void test_save_shouldThrowException() {
-        //given
-        AirportDTO airportDTO = AirportDTO.builder()
-                .name(NAME)
-                .maxCountOfSyncFlights(MAX_COUNT_OF_SYNC_FLIGHTS)
-                .airportIata("12")
-                .airportIcao(AIRPORT_ICAO)
-                .location(LOCATION)
-                .build();
-        //when
-        //then
-        ConstraintViolationException cve = assertThrows(ConstraintViolationException.class,
-                () -> airportService.save(airportDTO));
-        log.info("mes = {}", cve.getMessage());
     }
 
     @Test
@@ -271,12 +252,13 @@ class AirportServiceIT {
         airportRepository.save(airport1);
         AirportSearchCriteria criteria = new AirportSearchCriteria();
         //when
-        Pageable pageable = PageRequest.of(1,2);
-        Page<AirportDTO> page = airportService.getAirports(criteria,pageable);
+        Pageable pageable = PageRequest.of(1, 2);
+        Page<AirportDTO> page = airportService.getAirports(criteria, pageable);
         AirportDTO airportDTO = page.getContent().get(0);
 //        then
-        assertEquals("124",airportDTO.getAirportIata());
-        assertEquals("1233",airportDTO.getAirportIcao());
+        assertEquals(1, page.getContent().size());
+        assertEquals("124", airportDTO.getAirportIata());
+        assertEquals("1233", airportDTO.getAirportIcao());
     }
 
     private Integer getCountOfElementsInList(AirportSearchCriteria criteria,

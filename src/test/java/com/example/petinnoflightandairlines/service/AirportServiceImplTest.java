@@ -127,7 +127,7 @@ class AirportServiceImplTest {
         Page<AirportDTO> airportPage = airportService.getAirports(airportSearchCriteria, pageable);
         List<AirportDTO> airports = airportPage.getContent();
         //then
-        assertEquals(0,airports.size());
+        assertEquals(0, airports.size());
         verify(airportRepository, times(1)).findAll(any(Pageable.class));
     }
 
@@ -141,8 +141,8 @@ class AirportServiceImplTest {
         AirportSearchCriteria criteria = AirportSearchCriteria.builder()
                 .id(1L)
                 .build();
-        Pageable pageable = PageRequest.of(0,1);
-        Page<AirportDTO> airportPage = airportService.getAirports(criteria,pageable);
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<AirportDTO> airportPage = airportService.getAirports(criteria, pageable);
         AirportDTO foundAirportDTO = airportPage.getContent().get(0);
         //then
         assertEquals(NAME, foundAirportDTO.getName());
@@ -157,7 +157,7 @@ class AirportServiceImplTest {
     @Test
     void test_updateAirport_shouldUpdateAirport() {
         //given
-        AirportDTO airportDTO = AirportDTO.builder()
+        AirportDTO airportDTO1 = AirportDTO.builder()
                 .name("random name")
                 .maxCountOfSyncFlights(7)
                 .airportIata("321")
@@ -165,27 +165,26 @@ class AirportServiceImplTest {
                 .location("random location")
                 .build();
 
-        Airport airport1 = airportMapper.convertAirportDTOToAirport(airportDTO);
+        Airport airport1 = airportMapper.convertAirportDTOToAirport(airportDTO1);
 
         when(airportRepository.getAirportByAirportIata(anyString())).thenReturn(Optional.empty());
         when(airportRepository.getAirportByAirportIcao(anyString())).thenReturn(Optional.empty());
-        when(airportRepository.findAll(any(Specification.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of(airport)));
+        when(airportRepository.findById(anyLong())).thenReturn(Optional.of(airport1));
         when(airportRepository.save(any(Airport.class))).thenReturn(airport1);
 
         //when
-        AirportDTO updateAirportDTO = airportService.updateAirport(1L, airportDTO);
+        AirportDTO updateAirportDTO = airportService.updateAirport(1L, airportDTO1);
 
         //then
         assertNotNull(updateAirportDTO);
-        assertEquals(airportDTO.getAirportIata(), updateAirportDTO.getAirportIata());
-        assertEquals(airportDTO.getAirportIcao(), updateAirportDTO.getAirportIcao());
-        assertEquals(airportDTO.getName(), updateAirportDTO.getName());
-        assertEquals(airportDTO.getLocation(), updateAirportDTO.getLocation());
+        assertEquals(airportDTO1.getAirportIata(), updateAirportDTO.getAirportIata());
+        assertEquals(airportDTO1.getAirportIcao(), updateAirportDTO.getAirportIcao());
+        assertEquals(airportDTO1.getName(), updateAirportDTO.getName());
+        assertEquals(airportDTO1.getLocation(), updateAirportDTO.getLocation());
 
         verify(airportRepository, times(1)).getAirportByAirportIata(anyString());
         verify(airportRepository, times(1)).getAirportByAirportIcao(anyString());
-        verify(airportRepository, times(1)).findAll(any(Specification.class), any(Pageable.class));
+        verify(airportRepository, times(1)).findById(anyLong());
         verify(airportRepository, times(1)).save(any(Airport.class));
     }
 

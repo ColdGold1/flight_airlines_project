@@ -10,7 +10,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,7 @@ public class AirportServiceImpl implements AirportService {
         checkAirportCodes(airportDTO);
         Airport airport = airportMapper.convertAirportDTOToAirport(airportDTO);
 
-        Airport savedAirport = saveAirport(airport);
-        return airportMapper.convertAirportToAirportDTO(savedAirport);
+        return saveAirportAndReturnDTO(airport);
     }
 
     @Override
@@ -56,26 +54,22 @@ public class AirportServiceImpl implements AirportService {
                                     @Valid AirportDTO airportDTO) {
 
         checkAirportCodes(airportDTO);
-        AirportSearchCriteria criteria = AirportSearchCriteria
-                .builder()
-                .id(airportId)
-                .build();
 
-        Pageable pageable = PageRequest.of(0, 1);
+        Airport foundAirport = airportRepository
+                .findById(airportId)
+                .orElseThrow(() -> new RuntimeException("There is no such airport with id " + airportId));
 
-        Page<AirportDTO> airportPage = getAirports(criteria, pageable);
         log.info("started update of airport {}", airportId);
 
-        AirportDTO foundAirportDTO = airportPage.getContent().get(0);
+        foundAirport.setName(airportDTO.getName());
+        foundAirport.setAirportIcao(airportDTO.getAirportIcao());
+        foundAirport.setAirportIata(airportDTO.getAirportIata());
+        foundAirport.setLocation(airportDTO.getLocation());
+        foundAirport.setMaxCountOfSyncFlights(airportDTO.getMaxCountOfSyncFlights());
 
-        foundAirportDTO.setName(airportDTO.getName());
-        foundAirportDTO.setAirportIcao(airportDTO.getAirportIcao());
-        foundAirportDTO.setAirportIata(airportDTO.getAirportIata());
-        foundAirportDTO.setLocation(airportDTO.getLocation());
-        foundAirportDTO.setMaxCountOfSyncFlights(airportDTO.getMaxCountOfSyncFlights());
+        log.info("ended update of airport {}", airportId);
 
-        Airport savedAirport = saveAirport(foundAirportDTO);
-        return airportMapper.convertAirportToAirportDTO(savedAirport);
+        return saveAirportAndReturnDTO(foundAirport);
     }
 
     @Override
@@ -87,20 +81,16 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public Integer getAllFlightsConnectedWithAirport(Long airportId) {
 
-        Airport foundAirportDTO = airportRepository.findAirportWithFlightsById(airportId);
+        Airport foundAirport = airportRepository.findAirportWithFlightsById(airportId);
 
-        return foundAirportDTO.getDepartureFlights().size()
-                + foundAirportDTO.getArrivalFlights().size();
+        return foundAirport.getDepartureFlights().size()
+                + foundAirport.getArrivalFlights().size();
     }
 
-    private Airport saveAirport(Airport airport) {
+    private AirportDTO saveAirportAndReturnDTO(Airport airport) {
 
-        return airportRepository.save(airport);
-    }
-
-    private Airport saveAirport(AirportDTO airportDTO) {
-
-        return airportRepository.save(airportMapper.convertAirportDTOToAirport(airportDTO));
+        Airport savedAirport = airportRepository.save(airport);
+        return airportMapper.convertAirportToAirportDTO(savedAirport);
     }
 
     private void checkAirportCodes(AirportDTO airportDTO) {
